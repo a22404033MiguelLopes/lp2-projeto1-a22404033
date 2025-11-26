@@ -417,46 +417,67 @@ public class GameManager {
     }
 
 
-    public String getGameResults() {
+    public ArrayList<String> getGameResults() {
+        ArrayList<String> out = new ArrayList<>();
+
         if (!gameIsOver()) {
-            return null;
+            return out;
         }
 
-        int vivos = 0;
-        int presos = 0;
-        int derrotados = 0;
-
-        for (Player p : players.values()) {
-            if (p.state.equals("Em Jogo")) vivos++;
-            else if (p.state.equals("Preso")) presos++;
-            else if (p.state.equals("Derrotado")) derrotados++;
+        if (winnerId == null) {
+            Player winner = null;
+            for (int id : playerOrder) {
+                Player p = players.get(id);
+                if (p == null || p.state.equals("Derrotado")) {
+                    continue;
+                }
+                if (winner == null
+                        || p.pos > winner.pos
+                        || (p.pos == winner.pos && p.id < winner.id)) {
+                    winner = p;
+                }
+            }
+            if (winner != null) {
+                winnerId = winner.id;
+            } else {
+                return out;
+            }
         }
 
-        StringBuilder sb = new StringBuilder();
+        out.add("THE GREAT PROGRAMMING JOURNEY");
+        out.add("");
+        out.add("NR. DE TURNOS");
+        out.add(String.valueOf(turnCount));
+        out.add("");
+        out.add("VENCEDOR");
+        out.add(players.get(winnerId).name);
+        out.add("");
+        out.add("RESTANTES");
 
-        sb.append("Resultados do Jogo:\n");
-        sb.append("Jogadores vivos: ").append(vivos).append("\n");
-        sb.append("Jogadores presos: ").append(presos).append("\n");
-        sb.append("Jogadores derrotados: ").append(derrotados).append("\n\n");
-
-        for (Player p : players.values()) {
-            ArrayList<String> langs = new ArrayList<>(p.langs);
-            Collections.sort(langs, String.CASE_INSENSITIVE_ORDER);
-            String langsStr = String.join(";", langs);
-
-            ArrayList<String> tools = new ArrayList<>(p.tools);
-            Collections.sort(tools, String.CASE_INSENSITIVE_ORDER);
-            String toolsStr = tools.isEmpty() ? "No tools" : String.join(";", tools);
-
-            sb.append(p.name)
-                    .append(" | Estado: ").append(p.state)
-                    .append(" | Ferramentas: ").append(toolsStr)
-                    .append(" | Linguagens: ").append(langsStr)
-                    .append("\n");
+        ArrayList<Integer> restantes = new ArrayList<>();
+        for (int id : playerOrder) {
+            if (winnerId != null && id != winnerId) {
+                restantes.add(id);
+            }
         }
 
-        return sb.toString();
+        restantes.sort((a, b) -> {
+            int pa = players.get(a).pos;
+            int pb = players.get(b).pos;
+            if (pa != pb) {
+                return Integer.compare(pb, pa);
+            }
+            return Integer.compare(a, b);
+        });
+
+        for (Integer id : restantes) {
+            Player p = players.get(id);
+            out.add(p.name + " " + p.pos);
+        }
+
+        return out;
     }
+
 
     public void loadGame(File file) throws FileNotFoundException, InvalidFileException {
         if (file == null || !file.exists() || !file.isFile()) {
