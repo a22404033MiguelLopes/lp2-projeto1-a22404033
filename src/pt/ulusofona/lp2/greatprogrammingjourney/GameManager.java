@@ -17,14 +17,19 @@ public class GameManager {
     private final ArrayList<Integer> playerOrder = new ArrayList<>();
     private final HashMap<Integer, Player> players = new HashMap<>();
 
+    private final HashMap<Integer, Abyss> abysses = new HashMap<>();
+    private final HashMap<Integer, Tool> tools = new HashMap<>();
+
     private int currentIdx = 0;
 
     public GameManager() {}
 
     public boolean createInitialBoard(String[][] playerInfo, int worldSize) {
-        this.turnCount = 0;
         this.winnerId = null;
         this.initialized = false;
+
+        this.turnCount = 1;
+
         this.currentIdx = 0;
 
         if (playerInfo == null || playerInfo.length < 2 || playerInfo.length > 4) {
@@ -37,6 +42,9 @@ public class GameManager {
         this.worldSize = worldSize;
         playerOrder.clear();
         players.clear();
+
+        abysses.clear();
+        tools.clear();
 
         java.util.HashSet<Integer> usedIds = new java.util.HashSet<>();
         java.util.HashSet<String> usedColors = new java.util.HashSet<>();
@@ -89,46 +97,137 @@ public class GameManager {
             }
 
             Player p = new Player(id, name, color, langs);
+            p.pos = 1;
+            p.state = "Em Jogo";
+
             players.put(id, p);
             playerOrder.add(id);
         }
 
         Collections.sort(playerOrder);
+
         initialized = true;
         return true;
     }
 
-    public String getImagePng(int position) {
-        if (worldSize <= 0) {
+    public boolean createInitialBoard(String[][] playerInfo, int worldSize, String[][] abyssesAndTools) {
+
+        if (!validateAbyssesAndTools(abyssesAndTools, worldSize)) {
+            return false;
+        }
+
+        if (!createInitialBoard(playerInfo, worldSize)) {
+            return false;
+        }
+
+        abysses.clear();
+        tools.clear();
+
+        if (abyssesAndTools == null) {
+            return true;
+        }
+
+        for (String[] row : abyssesAndTools) {
+            int type;
+            int subtype;
+            int position;
+
+            try {
+                type = Integer.parseInt(row[0]);
+                subtype = Integer.parseInt(row[1]);
+                position = Integer.parseInt(row[2]);
+            } catch (Exception e) {
+                return false;
+            }
+
+            if (type == 0) {
+                abysses.put(position, new Abyss(subtype, position));
+            } else {
+                tools.put(position, new Tool(subtype, position));
+            }
+        }
+
+        return true;
+    }
+
+    private boolean validateAbyssesAndTools(String[][] abyssesAndTools, int worldSizeArg) {
+        if (abyssesAndTools == null) {
+            return true;
+        }
+
+        for (String[] row : abyssesAndTools) {
+            if (row == null || row.length != 3) {
+                return false;
+            }
+
+            int type;
+            int subtype;
+            int position;
+
+            try {
+                type = Integer.parseInt(row[0]);
+                subtype = Integer.parseInt(row[1]);
+                position = Integer.parseInt(row[2]);
+            } catch (Exception e) {
+                return false;
+            }
+
+            if (type != 0 && type != 1) {
+                return false;
+            }
+
+            if (type == 0) {
+                if (subtype < 0 || subtype > 9) {
+                    return false;
+                }
+            } else {
+                if (subtype < 0 || subtype > 5) {
+                    return false;
+                }
+            }
+
+            if (position < 1 || position > worldSizeArg) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public String getImagePng(int nrSquare) {
+        if (nrSquare < 1 || nrSquare > worldSize) {
             return null;
         }
-        if (position < 1 || position > worldSize) {
-            return null;
-        }
-        if (position == worldSize) {
+        if (nrSquare == worldSize) {
             return "glory.png";
+        }
+        if (abysses.containsKey(nrSquare)) {
+            return "abismo_" + abysses.get(nrSquare).subtypeId + ".png";
+        }
+        if (tools.containsKey(nrSquare)) {
+            return "ferramenta_" + tools.get(nrSquare).subtypeId + ".png";
         }
         return null;
     }
 
+
     public String[] getProgrammerInfo(int id) {
-        if (!initialized) {
-            return new String[]{ String.valueOf(id), "", "1", "Blue", "Em Jogo" };
-        }
         Player p = players.get(id);
         if (p == null) {
             return null;
         }
 
-        String colorCap = cap(p.colorLower);
-        return new String[]{
-                String.valueOf(p.id),
-                p.name,
-                String.valueOf(p.pos),
-                colorCap,
-                p.state
-        };
+        String langs = String.join(";", p.langs);
+        String color = p.colorLower.toUpperCase();
+        String pos = String.valueOf(p.pos);
+
+        ArrayList<String> orderedTools = new ArrayList<>(p.tools);
+        Collections.sort(orderedTools, String.CASE_INSENSITIVE_ORDER);
+        String toolsStr = String.join(";", orderedTools);
+
+        return new String[]{String.valueOf(p.id), p.name, langs, color, pos, toolsStr, p.state};
     }
+
 
     public String getProgrammerInfoAsStr(int id) {
         Player p = players.get(id);
@@ -136,12 +235,32 @@ public class GameManager {
             return null;
         }
 
-        ArrayList<String> sorted = new ArrayList<>(p.langs);
-        sorted.sort(String.CASE_INSENSITIVE_ORDER);
-        String langsJoined = String.join("; ", sorted);
+        ArrayList<String> langs = new ArrayList<>(p.langs);
+        Collections.sort(langs, String.CASE_INSENSITIVE_ORDER);
+        String langsStr = String.join("; ", langs);
 
-        return p.id + " | " + p.name + " | " + p.pos + " | " + langsJoined + " | " + p.state;
+        ArrayList<String> tools = new ArrayList<>(p.tools);
+        Collections.sort(tools, String.CASE_INSENSITIVE_ORDER);
+        String toolsStr = tools.isEmpty() ? "No tools" : String.join(";", tools);
+
+        return p.id + " | " + p.name + " | " + p.pos + " | " + toolsStr + " | " + langsStr + " | " + p.state;
     }
+
+    public String getProgrammersInfo() {
+        ArrayList<String> parts = new ArrayList<>();
+
+        for (Player p : players.values()) {
+            if (!p.state.equals("Derrotado")) {
+                ArrayList<String> tools = new ArrayList<>(p.tools);
+                Collections.sort(tools, String.CASE_INSENSITIVE_ORDER);
+                String toolsStr = tools.isEmpty() ? "No tools" : String.join(";", tools);
+                parts.add(p.name + " : " + toolsStr);
+            }
+        }
+
+        return String.join(" | ", parts);
+    }
+
 
     public String[] getSlotInfo(int position) {
         if (position < 1 || position > worldSize) {
@@ -152,15 +271,30 @@ public class GameManager {
         boolean first = true;
         for (Player p : players.values()) {
             if (p.pos == position) {
-                if (!first) {
-                    sb.append(",");
-                }
+                if (!first) sb.append(",");
                 sb.append(p.id);
                 first = false;
             }
         }
-        return new String[]{ sb.toString() };
+        String playersStr = sb.toString();
+
+        String desc = "";
+        if (abysses.containsKey(position)) {
+            desc = "Abyss";
+        } else if (tools.containsKey(position)) {
+            desc = "Tool";
+        }
+
+        String typeId = "";
+        if (abysses.containsKey(position)) {
+            typeId = "A:" + abysses.get(position).subtypeId;
+        } else if (tools.containsKey(position)) {
+            typeId = "T:" + tools.get(position).subtypeId;
+        }
+
+        return new String[]{ playersStr, desc, typeId };
     }
+
 
     public int getCurrentPlayerID() {
         if (playerOrder.isEmpty()) {

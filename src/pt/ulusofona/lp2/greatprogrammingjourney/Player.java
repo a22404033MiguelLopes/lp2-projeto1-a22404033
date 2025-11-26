@@ -9,6 +9,7 @@ class Player {
     ArrayList<String> langs;
     int pos;
     String state;
+    ArrayList<String> tools = new ArrayList<>();
 
     Player(int id, String name, String colorLower, ArrayList<String> langs) {
         this.id = id;
