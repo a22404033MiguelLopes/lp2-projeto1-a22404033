@@ -8,6 +8,11 @@ public class InfiniteLoopAbyss extends Abyss {
 
     @Override
     public String applyEffect(Player p, GameManager gm, int dice) {
+        for (Player other : gm.getPlayersAt(position)) {
+            if (other != p && other.state.equals("Preso")) {
+                other.state = "Em Jogo";
+            }
+        }
         p.state = "Preso";
         return "O programador " + p.name + " ficou preso devido a um Ciclo Infinito.";
     }

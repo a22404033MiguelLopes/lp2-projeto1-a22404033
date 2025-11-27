@@ -2,13 +2,9 @@ package pt.ulusofona.lp2.greatprogrammingjourney;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,6 +17,7 @@ public class GameManager {
     private boolean initialized = false;
     private int turnCount = 0;
     private Integer winnerId = null;
+    private int lastDice = 0;
 
     private final ArrayList<Integer> playerOrder = new ArrayList<>();
     private final HashMap<Integer, Player> players = new HashMap<>();
@@ -149,14 +146,19 @@ public class GameManager {
             }
 
             if (type == 0) {
-                abysses.put(position, new Abyss(subtype, position));
+                Abyss a = createAbyss(subtype, position);
+                if (a == null) return false;
+                abysses.put(position, a);
             } else {
-                tools.put(position, new Tool(subtype, position));
+                Tool t = createTool(subtype, position);
+                if (t == null) return false;
+                tools.put(position, t);
             }
         }
 
         return true;
     }
+
 
     private boolean validateAbyssesAndTools(String[][] abyssesAndTools, int worldSizeArg) {
         if (abyssesAndTools == null) {
@@ -202,6 +204,17 @@ public class GameManager {
         return true;
     }
 
+    public java.util.List<Player> getPlayersAt(int position) {
+        java.util.List<Player> res = new java.util.ArrayList<>();
+        for (Player p : players.values()) {
+            if (p.pos == position) {
+                res.add(p);
+            }
+        }
+        return res;
+    }
+
+
     public String getImagePng(int position) {
         if (position < 1 || position > worldSize) {
             return null;
@@ -212,29 +225,29 @@ public class GameManager {
 
         Abyss a = abysses.get(position);
         if (a != null) {
-            switch (a.subtypeId) {
+            switch (a.getId()) {
                 case 0: return "syntax.png";
-                case 1: return "crash.png";
-                case 2: return "core-dumped.png";
-                case 3: return "exception.png";
-                case 4: return "secondary-effects.png";
-                case 5: return "catch.png";
-                case 6: return "infinite-loop.png";
-                case 7: return "duplicated-code.png";
-                case 8: return "bsod.png";
-                case 9: return "file-not-found-exception.png";
+                case 1: return "logic-error.png";
+                case 2: return "exception.png";
+                case 3: return "file-not-found-exception.png";
+                case 4: return "crash.png";
+                case 5: return "duplicated-code.png";
+                case 6: return "secondary-effects.png";
+                case 7: return "bsod.png";
+                case 8: return "infinite-loop.png";
+                case 9: return "segmentation-fault.png";
                 default: return null;
             }
         }
 
         Tool t = tools.get(position);
         if (t != null) {
-            switch (t.subtypeId) {
-                case 0: return "IDE.png";
-                case 1: return "unit-tests.png";
-                case 2: return "functional.png";
-                case 3: return "logic.png";
-                case 4: return "inheritance.png";
+            switch (t.getId()) {
+                case 0: return "inheritance.png";
+                case 1: return "functional.png";
+                case 2: return "unit-tests.png";
+                case 3: return "exceptions.png";
+                case 4: return "ide.png";
                 case 5: return "ajuda-professor.png";
                 default: return null;
             }
@@ -242,7 +255,6 @@ public class GameManager {
 
         return null;
     }
-
 
 
     public String[] getProgrammerInfo(int id) {
@@ -327,18 +339,19 @@ public class GameManager {
 
         Abyss abyss = abysses.get(position);
         if (abyss != null) {
-            desc = getAbyssDescription(abyss.subtypeId);
-            typeId = "A:" + abyss.subtypeId;
+            desc = abyss.getName();
+            typeId = "A:" + abyss.getId();
         } else {
             Tool tool = tools.get(position);
             if (tool != null) {
-                desc = getToolDescription(tool.subtypeId);
-                typeId = "T:" + tool.subtypeId;
+                desc = tool.getName();
+                typeId = "T:" + tool.getId();
             }
         }
 
         return new String[]{ playersStr, desc, typeId };
     }
+
 
 
     private String getAbyssDescription(int subtypeId) {
@@ -384,7 +397,7 @@ public class GameManager {
         if (p == null) {
             return false;
         }
-        if (p.state.equals("Derrotado")) {
+        if (p.state.equals("Derrotado") || p.state.equals("Preso")) {
             return false;
         }
 
@@ -398,6 +411,8 @@ public class GameManager {
             }
         }
 
+        lastDice = nrSpaces;
+
         p.lastLastPos = p.lastPos;
         p.lastPos = p.pos;
 
@@ -405,12 +420,15 @@ public class GameManager {
         if (destino > worldSize) {
             int excesso = destino - worldSize;
             destino = worldSize - excesso;
-            if (destino < 1) destino = 1;
+            if (destino < 1) {
+                destino = 1;
+            }
         }
 
         p.pos = destino;
         return true;
     }
+
 
     public String reactToAbyssOrTool() {
         if (playerOrder.isEmpty() || worldSize <= 0) {
@@ -427,30 +445,27 @@ public class GameManager {
 
         Tool tool = tools.get(pos);
         if (tool != null) {
-            String toolName = getToolDescription(tool.subtypeId);
-
+            String toolName = tool.getName();
             if (!p.tools.contains(toolName)) {
                 p.tools.add(toolName);
                 message = "Jogador " + p.name + " apanhou a ferramenta " + toolName + ".";
             } else {
                 message = "Jogador " + p.name + " já tinha a ferramenta " + toolName + ".";
             }
-
             tools.remove(pos);
-        } else {
-            Abyss abyss = abysses.get(pos);
-            if (abyss != null) {
-                if (!p.tools.isEmpty()) {
-                    String usedTool = p.tools.remove(0);
-                    message = "Jogador " + p.name + " usou a ferramenta " + usedTool + " para evitar o abismo A:" + abyss.subtypeId + ".";
-                } else {
-                    p.state = "Derrotado";
-                    message = "Jogador " + p.name + " caiu no abismo A:" + abyss.subtypeId + " e foi derrotado.";
-                }
+        }
+
+        Abyss abyss = abysses.get(pos);
+        if (abyss != null) {
+            if (playerHasToolForAbyss(p, abyss)) {
+                consumeToolForAbyss(p, abyss);
+                message = "Jogador " + p.name + " usou uma ferramenta para evitar o abismo " + abyss.getName() + ".";
+            } else {
+                message = abyss.applyEffect(p, this, lastDice);
             }
         }
 
-        if (p.pos == worldSize && winnerId == null && !p.state.equals("Derrotado")) {
+        if (!p.state.equals("Derrotado") && p.pos == worldSize && winnerId == null) {
             winnerId = p.id;
         }
 
@@ -459,6 +474,7 @@ public class GameManager {
 
         return message;
     }
+
 
 
     public boolean gameIsOver() {
@@ -557,6 +573,7 @@ public class GameManager {
         }
 
         try {
+
             if (!sc.hasNextLine()) {
                 throw new InvalidFileException("Ficheiro vazio");
             }
@@ -575,8 +592,7 @@ public class GameManager {
                 throw new InvalidFileException("Dados de jogadores em falta");
             }
 
-            String line = sc.nextLine().trim();
-            int numPlayers = Integer.parseInt(line);
+            int numPlayers = Integer.parseInt(sc.nextLine().trim());
             if (numPlayers < 2 || numPlayers > 4) {
                 throw new InvalidFileException("Número de jogadores inválido");
             }
@@ -595,6 +611,7 @@ public class GameManager {
                 if (!sc.hasNextLine()) {
                     throw new InvalidFileException("Linha de jogador em falta");
                 }
+
                 String pl = sc.nextLine().trim();
                 String[] parts = pl.split(";");
                 if (parts.length != 7) {
@@ -603,7 +620,7 @@ public class GameManager {
 
                 int id = Integer.parseInt(parts[0]);
                 String name = parts[1];
-                String colorLower = parts[2].toLowerCase(java.util.Locale.ROOT);
+                String colorLower = parts[2].toLowerCase(Locale.ROOT);
                 int pos = Integer.parseInt(parts[3]);
                 String state = parts[4];
 
@@ -622,12 +639,9 @@ public class GameManager {
 
                 ArrayList<String> langs = new ArrayList<>();
                 if (!langsRaw.isEmpty()) {
-                    String[] lp = langsRaw.split(",");
-                    for (String l : lp) {
-                        String s = l.trim();
-                        if (!s.isEmpty()) {
-                            langs.add(s);
-                        }
+                    for (String l : langsRaw.split(",")) {
+                        l = l.trim();
+                        if (!l.isEmpty()) langs.add(l);
                     }
                 }
 
@@ -637,12 +651,9 @@ public class GameManager {
 
                 ArrayList<String> toolsList = new ArrayList<>();
                 if (!toolsRaw.isEmpty()) {
-                    String[] tp = toolsRaw.split(",");
-                    for (String t : tp) {
-                        String s = t.trim();
-                        if (!s.isEmpty()) {
-                            toolsList.add(s);
-                        }
+                    for (String t : toolsRaw.split(",")) {
+                        t = t.trim();
+                        if (!t.isEmpty()) toolsList.add(t);
                     }
                 }
                 p.tools = toolsList;
@@ -654,48 +665,68 @@ public class GameManager {
             if (!sc.hasNextLine()) {
                 throw new InvalidFileException("Número de abismos em falta");
             }
+
             int numAbysses = Integer.parseInt(sc.nextLine().trim());
             for (int i = 0; i < numAbysses; i++) {
                 if (!sc.hasNextLine()) {
                     throw new InvalidFileException("Linha de abismo em falta");
                 }
-                String al = sc.nextLine().trim();
-                String[] parts = al.split(";");
+
+                String line = sc.nextLine().trim();
+                String[] parts = line.split(";");
+
                 if (parts.length != 2) {
                     throw new InvalidFileException("Formato de abismo inválido");
                 }
+
                 int subtype = Integer.parseInt(parts[0]);
                 int pos = Integer.parseInt(parts[1]);
 
                 if (pos < 1 || pos > wSize) {
                     throw new InvalidFileException("Posição de abismo inválida");
                 }
-                abysses.put(pos, new Abyss(subtype, pos));
+
+                Abyss a = createAbyss(subtype, pos);
+                if (a == null) {
+                    throw new InvalidFileException("Tipo de abismo inválido");
+                }
+
+                abysses.put(pos, a);
             }
 
             if (!sc.hasNextLine()) {
                 throw new InvalidFileException("Número de ferramentas em falta");
             }
+
             int numTools = Integer.parseInt(sc.nextLine().trim());
             for (int i = 0; i < numTools; i++) {
                 if (!sc.hasNextLine()) {
                     throw new InvalidFileException("Linha de ferramenta em falta");
                 }
-                String tl = sc.nextLine().trim();
-                String[] parts = tl.split(";");
+
+                String line = sc.nextLine().trim();
+                String[] parts = line.split(";");
+
                 if (parts.length != 2) {
                     throw new InvalidFileException("Formato de ferramenta inválido");
                 }
+
                 int subtype = Integer.parseInt(parts[0]);
                 int pos = Integer.parseInt(parts[1]);
 
                 if (pos < 1 || pos > wSize) {
                     throw new InvalidFileException("Posição de ferramenta inválida");
                 }
-                tools.put(pos, new Tool(subtype, pos));
+
+                Tool t = createTool(subtype, pos);
+                if (t == null) {
+                    throw new InvalidFileException("Tipo de ferramenta inválido");
+                }
+
+                tools.put(pos, t);
             }
 
-            java.util.Collections.sort(playerOrder);
+            Collections.sort(playerOrder);
 
             this.currentIdx = 0;
             for (int i = 0; i < playerOrder.size(); i++) {
@@ -713,16 +744,21 @@ public class GameManager {
             }
 
             this.initialized = true;
+
         } catch (NumberFormatException e) {
             throw new InvalidFileException("Valor numérico inválido", e);
+
         } catch (InvalidFileException e) {
             throw e;
+
         } catch (Exception e) {
             throw new InvalidFileException("Erro ao carregar ficheiro", e);
+
         } finally {
             sc.close();
         }
     }
+
 
     public boolean saveGame(File file) {
         if (file == null) {
@@ -730,6 +766,7 @@ public class GameManager {
         }
 
         try (PrintWriter out = new PrintWriter(new FileWriter(file))) {
+
             int currentPlayerId = getCurrentPlayerID();
             out.println(worldSize + ";" + turnCount + ";" + currentPlayerId);
 
@@ -756,19 +793,21 @@ public class GameManager {
 
             out.println(abysses.size());
             for (Abyss a : abysses.values()) {
-                out.println(a.subtypeId + ";" + a.position);
+                out.println(a.getId() + ";" + a.getPosition());
             }
 
             out.println(tools.size());
             for (Tool t : tools.values()) {
-                out.println(t.subtypeId + ";" + t.position);
+                out.println(t.getId() + ";" + t.getPosition());
             }
 
             return true;
+
         } catch (IOException e) {
             return false;
         }
     }
+
 
 
     public JPanel getAuthorsPanel() {
@@ -836,4 +875,54 @@ public class GameManager {
     private Color hex(String rgb) {
         return Color.decode(rgb);
     }
+
+    private Abyss createAbyss(int subtypeId, int position) {
+        switch (subtypeId) {
+            case 0: return new SyntaxErrorAbyss(position);
+            case 1: return new LogicErrorAbyss(position);
+            case 2: return new ExceptionAbyss(position);
+            case 3: return new FileNotFoundExceptionAbyss(position);
+            case 4: return new CrashAbyss(position);
+            case 5: return new DuplicatedCodeAbyss(position);
+            case 6: return new SideEffectsAbyss(position);
+            case 7: return new BlueScreenOfDeathAbyss(position);
+            case 8: return new InfiniteLoopAbyss(position);
+            case 9: return new SegmentationFaultAbyss(position);
+            default: return null;
+        }
+    }
+
+    private Tool createTool(int subtypeId, int position) {
+        switch (subtypeId) {
+            case 0: return new HerancaTool(position);
+            case 1: return new ProgramacaoFuncionalTool(position);
+            case 2: return new TestesUnitariosTool(position);
+            case 3: return new TratamentoExcepcoesTool(position);
+            case 4: return new IDETool(position);
+            case 5: return new AjudaDoProfessorTool(position);
+            default: return null;
+        }
+    }
+
+    private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
+        int id = abyss.getId();
+        if (id == 8) {
+            return p.tools.contains("Herança");
+        }
+        if (id == 5) {
+            return p.tools.contains("Programação Funcional");
+        }
+        return false;
+    }
+
+    private void consumeToolForAbyss(Player p, Abyss abyss) {
+        int id = abyss.getId();
+        if (id == 8) {
+            p.tools.remove("Herança");
+        } else if (id == 5) {
+            p.tools.remove("Programação Funcional");
+        }
+    }
+
+
 }
