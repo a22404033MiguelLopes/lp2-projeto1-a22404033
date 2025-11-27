@@ -1,8 +1,8 @@
 package pt.ulusofona.lp2.greatprogrammingjourney;
 
-public class TestesUnitariosTool extends Tool {
+public class UnitTestsTool extends Tool {
 
-    public TestesUnitariosTool(int position) {
+    public UnitTestsTool(int position) {
         super(2, "Testes Unitários", position);
     }
 

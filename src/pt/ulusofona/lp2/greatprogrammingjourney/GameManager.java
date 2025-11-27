@@ -896,7 +896,7 @@ public class GameManager {
         switch (subtypeId) {
             case 0: return new HerancaTool(position);
             case 1: return new ProgramacaoFuncionalTool(position);
-            case 2: return new TestesUnitariosTool(position);
+            case 2: return new UnitTestsTool(position);
             case 3: return new TratamentoExcepcoesTool(position);
             case 4: return new IDETool(position);
             case 5: return new AjudaDoProfessorTool(position);
