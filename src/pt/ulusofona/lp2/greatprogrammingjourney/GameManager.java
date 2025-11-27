@@ -226,15 +226,24 @@ public class GameManager {
         }
 
         String langs = String.join(";", p.langs);
-        String color = p.colorLower.toUpperCase();
+        String color = cap(p.colorLower);
         String pos = String.valueOf(p.pos);
 
         ArrayList<String> orderedTools = new ArrayList<>(p.tools);
         Collections.sort(orderedTools, String.CASE_INSENSITIVE_ORDER);
         String toolsStr = String.join(";", orderedTools);
 
-        return new String[]{String.valueOf(p.id), p.name, langs, color, pos, toolsStr, p.state};
+        return new String[]{
+                String.valueOf(p.id),
+                p.name,
+                langs,
+                color,
+                pos,
+                toolsStr,
+                p.state
+        };
     }
+
 
 
     public String getProgrammerInfoAsStr(int id) {
@@ -477,7 +486,6 @@ public class GameManager {
 
         return out;
     }
-
 
     public void loadGame(File file) throws FileNotFoundException, InvalidFileException {
         if (file == null || !file.exists() || !file.isFile()) {
