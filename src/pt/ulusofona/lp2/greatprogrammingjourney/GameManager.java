@@ -304,7 +304,6 @@ public class GameManager {
         return String.join(" | ", parts);
     }
 
-
     public String[] getSlotInfo(int position) {
         if (position < 1 || position > worldSize) {
             return null;
@@ -314,7 +313,9 @@ public class GameManager {
         boolean first = true;
         for (Player p : players.values()) {
             if (p.pos == position) {
-                if (!first) sb.append(",");
+                if (!first) {
+                    sb.append(",");
+                }
                 sb.append(p.id);
                 first = false;
             }
@@ -322,20 +323,39 @@ public class GameManager {
         String playersStr = sb.toString();
 
         String desc = "";
-        if (abysses.containsKey(position)) {
-            desc = "Abyss";
-        } else if (tools.containsKey(position)) {
-            desc = "Tool";
-        }
-
         String typeId = "";
-        if (abysses.containsKey(position)) {
-            typeId = "A:" + abysses.get(position).subtypeId;
-        } else if (tools.containsKey(position)) {
-            typeId = "T:" + tools.get(position).subtypeId;
+
+        Abyss abyss = abysses.get(position);
+        if (abyss != null) {
+            desc = getAbyssDescription(abyss.subtypeId);
+            typeId = "A:" + abyss.subtypeId;
+        } else {
+            Tool tool = tools.get(position);
+            if (tool != null) {
+                desc = getToolDescription(tool.subtypeId);
+                typeId = "T:" + tool.subtypeId;
+            }
         }
 
         return new String[]{ playersStr, desc, typeId };
+    }
+
+
+    private String getAbyssDescription(int subtypeId) {
+        switch (subtypeId) {
+            case 0: return "Erro de sintaxe";
+            // depois completas os outros se/quando for preciso:
+            // case 1: return "...";
+            // case 2: return "...";
+            default: return "Abismo";
+        }
+    }
+
+    private String getToolDescription(int subtypeId) {
+        switch (subtypeId) {
+            // completa com os nomes que quiseres/usares
+            default: return "Ferramenta";
+        }
     }
 
 
