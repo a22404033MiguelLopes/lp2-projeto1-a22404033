@@ -353,10 +353,16 @@ public class GameManager {
 
     private String getToolDescription(int subtypeId) {
         switch (subtypeId) {
-            // completa com os nomes que quiseres/usares
+            case 0: return "Herança";
+            case 1: return "Programação Funcional";
+            case 2: return "Testes Unitários";
+            case 3: return "Tratamento de Excepções";
+            case 4: return "IDE";
+            case 5: return "Ajuda Do Professor";
             default: return "Ferramenta";
         }
     }
+
 
 
     public int getCurrentPlayerID() {
@@ -418,13 +424,15 @@ public class GameManager {
 
         Tool tool = tools.get(pos);
         if (tool != null) {
-            String toolKey = "T" + tool.subtypeId;
-            if (!p.tools.contains(toolKey)) {
-                p.tools.add(toolKey);
-                message = "Jogador " + p.name + " apanhou a ferramenta " + toolKey + ".";
+            String toolName = getToolDescription(tool.subtypeId);
+
+            if (!p.tools.contains(toolName)) {
+                p.tools.add(toolName);
+                message = "Jogador " + p.name + " apanhou a ferramenta " + toolName + ".";
             } else {
-                message = "Jogador " + p.name + " já tinha a ferramenta " + toolKey + ".";
+                message = "Jogador " + p.name + " já tinha a ferramenta " + toolName + ".";
             }
+
             tools.remove(pos);
         } else {
             Abyss abyss = abysses.get(pos);
