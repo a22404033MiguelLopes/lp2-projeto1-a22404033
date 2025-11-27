@@ -202,21 +202,47 @@ public class GameManager {
         return true;
     }
 
-    public String getImagePng(int nrSquare) {
-        if (nrSquare < 1 || nrSquare > worldSize) {
+    public String getImagePng(int position) {
+        if (position < 1 || position > worldSize) {
             return null;
         }
-        if (nrSquare == worldSize) {
+        if (position == worldSize) {
             return "glory.png";
         }
-        if (abysses.containsKey(nrSquare)) {
-            return "abismo_" + abysses.get(nrSquare).subtypeId + ".png";
+
+        Abyss a = abysses.get(position);
+        if (a != null) {
+            switch (a.subtypeId) {
+                case 0: return "syntax.png";
+                case 1: return "crash.png";
+                case 2: return "core-dumped.png";
+                case 3: return "exception.png";
+                case 4: return "secondary-effects.png";
+                case 5: return "catch.png";
+                case 6: return "infinite-loop.png";
+                case 7: return "duplicated-code.png";
+                case 8: return "bsod.png";
+                case 9: return "file-not-found-exception.png";
+                default: return null;
+            }
         }
-        if (tools.containsKey(nrSquare)) {
-            return "ferramenta_" + tools.get(nrSquare).subtypeId + ".png";
+
+        Tool t = tools.get(position);
+        if (t != null) {
+            switch (t.subtypeId) {
+                case 0: return "IDE.png";
+                case 1: return "unit-tests.png";
+                case 2: return "functional.png";
+                case 3: return "logic.png";
+                case 4: return "inheritance.png";
+                case 5: return "ajuda-professor.png";
+                default: return null;
+            }
         }
+
         return null;
     }
+
 
 
     public String[] getProgrammerInfo(int id) {
