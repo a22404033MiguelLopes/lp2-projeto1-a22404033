@@ -1,11 +1,26 @@
 package pt.ulusofona.lp2.greatprogrammingjourney;
 
-class Tool {
-    final int subtypeId;
-    final int position;
+public abstract class Tool {
 
-    Tool(int subtypeId, int position) {
-        this.subtypeId = subtypeId;
+    protected final int id;
+    protected final String name;
+    protected final int position;
+
+    public Tool(int id, String name, int position) {
+        this.id = id;
+        this.name = name;
         this.position = position;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getPosition() {
+        return position;
     }
 }

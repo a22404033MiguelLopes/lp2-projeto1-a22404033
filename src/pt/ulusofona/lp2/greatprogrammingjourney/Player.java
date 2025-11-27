@@ -8,6 +8,8 @@ class Player {
     String colorLower;
     ArrayList<String> langs;
     int pos;
+    int lastPos;
+    int lastLastPos;
     String state;
     ArrayList<String> tools = new ArrayList<>();
 
@@ -17,6 +19,9 @@ class Player {
         this.colorLower = colorLower;
         this.langs = (langs != null) ? langs : new ArrayList<>();
         this.pos = 1;
+        this.lastPos = 1;
+        this.lastLastPos = 1;
         this.state = "Em Jogo";
     }
+
 }

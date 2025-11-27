@@ -398,6 +398,9 @@ public class GameManager {
             }
         }
 
+        p.lastLastPos = p.lastPos;
+        p.lastPos = p.pos;
+
         int destino = p.pos + nrSpaces;
         if (destino > worldSize) {
             int excesso = destino - worldSize;
