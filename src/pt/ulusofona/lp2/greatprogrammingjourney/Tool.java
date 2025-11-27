@@ -23,4 +23,6 @@ public abstract class Tool {
     public int getPosition() {
         return position;
     }
+
+    public abstract boolean protects(Abyss abyss);
 }
