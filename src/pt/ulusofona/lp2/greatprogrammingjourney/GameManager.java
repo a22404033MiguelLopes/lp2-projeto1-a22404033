@@ -357,9 +357,6 @@ public class GameManager {
     private String getAbyssDescription(int subtypeId) {
         switch (subtypeId) {
             case 0: return "Erro de sintaxe";
-            // depois completas os outros se/quando for preciso:
-            // case 1: return "...";
-            // case 2: return "...";
             default: return "Abismo";
         }
     }
@@ -916,24 +913,33 @@ public class GameManager {
     private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
 
+        java.util.function.Predicate<String> has = tool ->
+                tool.equalsIgnoreCase("Programação Funcional") ||
+                        tool.equalsIgnoreCase("Programacao Funcional") ||
+                        tool.equalsIgnoreCase("Funcional") ||
+                        tool.equalsIgnoreCase("Functional");
+
         if (id == 0) {
-            return p.tools.contains("IDE");
+            return p.tools.stream().anyMatch(t -> t.equalsIgnoreCase("IDE"));
         }
 
         if (id == 1 || id == 5 || id == 6) {
-            return p.tools.contains("Programação Funcional");
+            return p.tools.stream().anyMatch(has);
         }
 
         if (id == 2 || id == 3) {
-            return p.tools.contains("Tratamento de Excepções");
+            return p.tools.stream().anyMatch(t ->
+                    t.equalsIgnoreCase("Tratamento de Excepções") ||
+                            t.equalsIgnoreCase("Tratamento de Excecoes"));
         }
 
         if (id == 8) {
-            return p.tools.contains("Herança");
+            return p.tools.stream().anyMatch(t -> t.equalsIgnoreCase("Herança"));
         }
 
         return false;
     }
+
 
 
 
