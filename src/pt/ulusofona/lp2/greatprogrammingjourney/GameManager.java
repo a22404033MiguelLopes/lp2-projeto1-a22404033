@@ -227,7 +227,7 @@ public class GameManager {
         if (a != null) {
             switch (a.getId()) {
                 case 0: return "syntax.png";
-                case 1: return "logic-error.png";
+                case 1: return "logic.png";
                 case 2: return "exception.png";
                 case 3: return "file-not-found-exception.png";
                 case 4: return "crash.png";
@@ -235,7 +235,7 @@ public class GameManager {
                 case 6: return "secondary-effects.png";
                 case 7: return "bsod.png";
                 case 8: return "infinite-loop.png";
-                case 9: return "segmentation-fault.png";
+                case 9: return "core-dumped.png";
                 default: return null;
             }
         }
@@ -246,8 +246,8 @@ public class GameManager {
                 case 0: return "inheritance.png";
                 case 1: return "functional.png";
                 case 2: return "unit-tests.png";
-                case 3: return "exceptions.png";
-                case 4: return "ide.png";
+                case 3: return "exception.png";
+                case 4: return "IDE.png";
                 case 5: return "ajuda-professor.png";
                 default: return null;
             }
@@ -446,14 +446,17 @@ public class GameManager {
         Tool tool = tools.get(pos);
         if (tool != null) {
             String toolName = tool.getName();
+
             if (!p.tools.contains(toolName)) {
                 p.tools.add(toolName);
-                message = "Jogador " + p.name + " apanhou a ferramenta " + toolName + ".";
+                message = "Jogador " + p.name + " agarrou " + toolName + ".";
             } else {
                 message = "Jogador " + p.name + " já tinha a ferramenta " + toolName + ".";
             }
+
             tools.remove(pos);
         }
+
 
         Abyss abyss = abysses.get(pos);
         if (abyss != null) {
@@ -546,11 +549,16 @@ public class GameManager {
         restantes.sort((a, b) -> {
             int pa = players.get(a).pos;
             int pb = players.get(b).pos;
+
             if (pa != pb) {
                 return Integer.compare(pb, pa);
             }
-            return Integer.compare(a, b);
+
+            String na = players.get(a).name;
+            String nb = players.get(b).name;
+            return na.compareToIgnoreCase(nb);
         });
+
 
         for (Integer id : restantes) {
             Player p = players.get(id);
@@ -614,7 +622,8 @@ public class GameManager {
 
                 String pl = sc.nextLine().trim();
                 String[] parts = pl.split(";");
-                if (parts.length != 7) {
+
+                if (parts.length != 6 && parts.length != 7) {
                     throw new InvalidFileException("Formato de jogador inválido");
                 }
 
@@ -625,7 +634,7 @@ public class GameManager {
                 String state = parts[4];
 
                 String langsRaw = parts[5];
-                String toolsRaw = parts[6];
+                String toolsRaw = (parts.length == 7) ? parts[6] : "";
 
                 if (id <= 0) {
                     throw new InvalidFileException("ID de jogador inválido");
@@ -661,6 +670,7 @@ public class GameManager {
                 players.put(id, p);
                 playerOrder.add(id);
             }
+
 
             if (!sc.hasNextLine()) {
                 throw new InvalidFileException("Número de abismos em falta");
@@ -906,23 +916,31 @@ public class GameManager {
 
     private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
+
         if (id == 8) {
             return p.tools.contains("Herança");
         }
         if (id == 5) {
             return p.tools.contains("Programação Funcional");
         }
+        if (id == 6) {
+            return p.tools.contains("Tratamento de Excepções");
+        }
+
         return false;
     }
 
+
     private void consumeToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
+
         if (id == 8) {
             p.tools.remove("Herança");
         } else if (id == 5) {
             p.tools.remove("Programação Funcional");
+        } else if (id == 6) {
+            p.tools.remove("Tratamento de Excepções");
         }
     }
-
 
 }
