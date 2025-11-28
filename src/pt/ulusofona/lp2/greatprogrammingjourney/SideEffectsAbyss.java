@@ -10,6 +10,7 @@ public class SideEffectsAbyss extends Abyss {
     public String applyEffect(Player p, GameManager gm, int dice) {
         int alvo = (p.lastLastPos <= 0) ? 1 : p.lastLastPos;
         p.pos = alvo;
-        return "O programador " + p.name + " voltou à posição de há 2 jogadas devido a Efeitos secundários.";
+        return "O jogador " + p.name + " voltou à posição de há 2 jogadas.";
     }
 }
+
