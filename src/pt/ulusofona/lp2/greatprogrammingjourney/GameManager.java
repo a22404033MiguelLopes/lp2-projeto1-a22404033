@@ -469,7 +469,10 @@ public class GameManager {
         }
 
         turnCount++;
-        advanceTurn();
+
+        if (!gameIsOver()) {
+            advanceTurn();
+        }
 
         return message;
     }
@@ -913,7 +916,7 @@ public class GameManager {
     private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
 
-        if (id == 0) {
+        if (id == 0 || id == 8) {
             return p.tools.stream().anyMatch(t -> t.equalsIgnoreCase("IDE"));
         }
 
@@ -937,14 +940,6 @@ public class GameManager {
                             t.equalsIgnoreCase("Tratamento de Excecoes"));
         }
 
-        if (id == 8) {
-            return p.tools.stream().anyMatch(t ->
-                    t.equalsIgnoreCase("Herança") ||
-                            t.equalsIgnoreCase("Heranca")
-            );
-        }
-
-
         return false;
     }
 
@@ -955,7 +950,7 @@ public class GameManager {
     private void consumeToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
 
-        if (id == 0) {
+        if (id == 0 || id == 8) {
             p.tools.removeIf(t -> t.equalsIgnoreCase("IDE"));
         } else if (id == 1) {
             p.tools.removeIf(t ->
@@ -971,8 +966,6 @@ public class GameManager {
             p.tools.removeIf(t ->
                     t.equalsIgnoreCase("Tratamento de Excepções") ||
                             t.equalsIgnoreCase("Tratamento de Excecoes"));
-        } else if (id == 8) {
-            p.tools.removeIf(t -> t.equalsIgnoreCase("Herança"));
         }
     }
 
