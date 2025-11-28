@@ -8,6 +8,7 @@ public class HerancaTool extends Tool {
 
     @Override
     public boolean protects(Abyss abyss) {
-        return abyss.getId() == 8;
+        return false;
     }
 }
+

@@ -913,18 +913,22 @@ public class GameManager {
     private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
 
-        java.util.function.Predicate<String> has = tool ->
-                tool.equalsIgnoreCase("Programação Funcional") ||
-                        tool.equalsIgnoreCase("Programacao Funcional") ||
-                        tool.equalsIgnoreCase("Funcional") ||
-                        tool.equalsIgnoreCase("Functional");
-
         if (id == 0) {
             return p.tools.stream().anyMatch(t -> t.equalsIgnoreCase("IDE"));
         }
 
-        if (id == 1 || id == 5 || id == 6) {
-            return p.tools.stream().anyMatch(has);
+        if (id == 1) {
+            return p.tools.stream().anyMatch(t ->
+                    t.equalsIgnoreCase("Testes Unitários") ||
+                            t.equalsIgnoreCase("Testes Unitarios"));
+        }
+
+        if (id == 5 || id == 6) {
+            return p.tools.stream().anyMatch(t ->
+                    t.equalsIgnoreCase("Programação Funcional") ||
+                            t.equalsIgnoreCase("Programacao Funcional") ||
+                            t.equalsIgnoreCase("Funcional") ||
+                            t.equalsIgnoreCase("Functional"));
         }
 
         if (id == 2 || id == 3) {
@@ -934,8 +938,12 @@ public class GameManager {
         }
 
         if (id == 8) {
-            return p.tools.stream().anyMatch(t -> t.equalsIgnoreCase("Herança"));
+            return p.tools.stream().anyMatch(t ->
+                    t.equalsIgnoreCase("Herança") ||
+                            t.equalsIgnoreCase("Heranca")
+            );
         }
+
 
         return false;
     }
@@ -948,15 +956,26 @@ public class GameManager {
         int id = abyss.getId();
 
         if (id == 0) {
-            p.tools.remove("IDE");
-        } else if (id == 1 || id == 5 || id == 6) {
-            p.tools.remove("Programação Funcional");
+            p.tools.removeIf(t -> t.equalsIgnoreCase("IDE"));
+        } else if (id == 1) {
+            p.tools.removeIf(t ->
+                    t.equalsIgnoreCase("Testes Unitários") ||
+                            t.equalsIgnoreCase("Testes Unitarios"));
+        } else if (id == 5 || id == 6) {
+            p.tools.removeIf(t ->
+                    t.equalsIgnoreCase("Programação Funcional") ||
+                            t.equalsIgnoreCase("Programacao Funcional") ||
+                            t.equalsIgnoreCase("Funcional") ||
+                            t.equalsIgnoreCase("Functional"));
         } else if (id == 2 || id == 3) {
-            p.tools.remove("Tratamento de Excepções");
+            p.tools.removeIf(t ->
+                    t.equalsIgnoreCase("Tratamento de Excepções") ||
+                            t.equalsIgnoreCase("Tratamento de Excecoes"));
         } else if (id == 8) {
-            p.tools.remove("Herança");
+            p.tools.removeIf(t -> t.equalsIgnoreCase("Herança"));
         }
     }
+
 
 
 
