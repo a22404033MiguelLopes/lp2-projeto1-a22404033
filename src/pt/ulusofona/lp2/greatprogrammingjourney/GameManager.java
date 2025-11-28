@@ -480,25 +480,24 @@ public class GameManager {
 
 
     public boolean gameIsOver() {
-        if (playerOrder.isEmpty() || worldSize <= 0) {
+        if (worldSize <= 0 || players.isEmpty()) {
             return false;
         }
 
-        for (Player p : players.values()) {
-            if (!p.state.equals("Derrotado") && p.pos == worldSize) {
-                return true;
-            }
-        }
-
         int vivos = 0;
+
         for (Player p : players.values()) {
             if (!p.state.equals("Derrotado")) {
                 vivos++;
+                if (p.pos == worldSize) {
+                    return true;
+                }
             }
         }
 
         return vivos <= 1;
     }
+
 
 
     public ArrayList<String> getGameResults() {
