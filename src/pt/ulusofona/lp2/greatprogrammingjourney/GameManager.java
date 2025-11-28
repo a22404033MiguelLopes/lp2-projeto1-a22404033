@@ -454,7 +454,6 @@ public class GameManager {
                 message = "Jogador " + p.name + " já tinha a ferramenta " + toolName + ".";
             }
 
-            tools.remove(pos);
         }
 
 
@@ -917,30 +916,46 @@ public class GameManager {
     private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
 
-        if (id == 8) {
-            return p.tools.contains("Herança");
+        if (id == 0) {
+            return p.tools.contains("IDE");
         }
-        if (id == 5) {
+
+        if (id == 1 || id == 5) {
             return p.tools.contains("Programação Funcional");
         }
-        if (id == 6) {
+
+        if (id == 2 || id == 3) {
             return p.tools.contains("Tratamento de Excepções");
+        }
+
+        if (id == 6) {
+            return p.tools.contains("Testes Unitários");
+        }
+
+        if (id == 8) {
+            return p.tools.contains("Herança");
         }
 
         return false;
     }
 
 
+
     private void consumeToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
 
-        if (id == 8) {
-            p.tools.remove("Herança");
-        } else if (id == 5) {
+        if (id == 0) {
+            p.tools.remove("IDE");
+        } else if (id == 1 || id == 5) {
             p.tools.remove("Programação Funcional");
-        } else if (id == 6) {
+        } else if (id == 2 || id == 3) {
             p.tools.remove("Tratamento de Excepções");
+        } else if (id == 6) {
+            p.tools.remove("Testes Unitários");
+        } else if (id == 8) {
+            p.tools.remove("Herança");
         }
     }
+
 
 }
