@@ -498,8 +498,6 @@ public class GameManager {
         return vivos <= 1;
     }
 
-
-
     public ArrayList<String> getGameResults() {
         ArrayList<String> out = new ArrayList<>();
 
@@ -946,7 +944,7 @@ public class GameManager {
         }
 
         if (id == 8) {
-            return hasToolNamed(p, "Herança", "Heranca", "Inheritance");
+            return !p.tools.isEmpty();
         }
 
         return false;
