@@ -384,8 +384,20 @@ public class GameManager {
             return winnerId;
         }
 
+        Player current = players.get(playerOrder.get(currentIdx));
+        if (current == null || current.state.equals("Derrotado")) {
+            for (int i = 0; i < playerOrder.size(); i++) {
+                Player cand = players.get(playerOrder.get(i));
+                if (cand != null && !cand.state.equals("Derrotado")) {
+                    currentIdx = i;
+                    break;
+                }
+            }
+        }
+
         return playerOrder.get(currentIdx);
     }
+
 
 
     public boolean moveCurrentPlayer(int nrSpaces) {
@@ -867,10 +879,24 @@ public class GameManager {
     }
 
     private void advanceTurn() {
-        if (!playerOrder.isEmpty()) {
-            currentIdx = (currentIdx + 1) % playerOrder.size();
+        if (playerOrder.isEmpty()) {
+            return;
         }
+
+        int attempts = 0;
+
+        do {
+            currentIdx = (currentIdx + 1) % playerOrder.size();
+            Player candidate = players.get(playerOrder.get(currentIdx));
+
+            if (candidate != null && !candidate.state.equals("Derrotado")) {
+                break;
+            }
+
+            attempts++;
+        } while (attempts < playerOrder.size());
     }
+
 
     private String cap(String s) {
         return (s == null || s.isEmpty()) ? "" : Character.toUpperCase(s.charAt(0)) + s.substring(1);
@@ -974,7 +1000,4 @@ public class GameManager {
                             t.equalsIgnoreCase("Funcional"));
         }
     }
-
-
-
 }
