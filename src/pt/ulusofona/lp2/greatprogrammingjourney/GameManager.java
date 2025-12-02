@@ -937,7 +937,7 @@ public class GameManager {
             return hasToolNamed(p, "Tratamento de Excepções", "Tratamento de Excecoes");
         }
 
-        if (id == 5 || id == 6) {
+        if (id == 5 || id == 6 || id == 8) {
             return hasToolNamed(p,
                     "Programação Funcional", "Programacao Funcional",
                     "Functional", "Funcional");
@@ -960,7 +960,7 @@ public class GameManager {
             p.tools.removeIf(t ->
                     t.equalsIgnoreCase("Tratamento de Excepções") ||
                             t.equalsIgnoreCase("Tratamento de Excecoes"));
-        } else if (id == 5 || id == 6) {
+        } else if (id == 5 || id == 6 || id == 8) {
             p.tools.removeIf(t ->
                     t.equalsIgnoreCase("Programação Funcional") ||
                             t.equalsIgnoreCase("Programacao Funcional") ||
