@@ -970,11 +970,6 @@ public class GameManager {
                             t.equalsIgnoreCase("Programacao Funcional") ||
                             t.equalsIgnoreCase("Functional") ||
                             t.equalsIgnoreCase("Funcional"));
-        } else if (id == 8) {
-            p.tools.removeIf(t ->
-                    t.equalsIgnoreCase("Herança") ||
-                            t.equalsIgnoreCase("Heranca") ||
-                            t.equalsIgnoreCase("Inheritance"));
         }
     }
 
