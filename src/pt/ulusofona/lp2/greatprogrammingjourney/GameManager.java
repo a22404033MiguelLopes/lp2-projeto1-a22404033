@@ -912,45 +912,45 @@ public class GameManager {
         }
     }
 
-    private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
-        int id = abyss.getId();
-
-        if (id == 0 ) {
-            return p.tools.stream().anyMatch(t -> t.equalsIgnoreCase("IDE"));
+    private boolean hasToolNamed(Player p, String... names) {
+        for (String t : p.tools) {
+            for (String n : names) {
+                if (t.equalsIgnoreCase(n)) {
+                    return true;
+                }
+            }
         }
-
-        if (id == 1) {
-            return p.tools.stream().anyMatch(t ->
-                    t.equalsIgnoreCase("Testes Unitários") ||
-                            t.equalsIgnoreCase("Testes Unitarios"));
-        }
-
-        if (id == 5 || id == 6) {
-            return p.tools.stream().anyMatch(t ->
-                    t.equalsIgnoreCase("Programação Funcional") ||
-                            t.equalsIgnoreCase("Programacao Funcional") ||
-                            t.equalsIgnoreCase("Funcional") ||
-                            t.equalsIgnoreCase("Functional"));
-        }
-
-        if (id == 2 || id == 3) {
-            return p.tools.stream().anyMatch(t ->
-                    t.equalsIgnoreCase("Tratamento de Excepções") ||
-                            t.equalsIgnoreCase("Tratamento de Excecoes"));
-        }
-
-        if (id == 8) {
-            return p.tools.stream().anyMatch(t ->
-                    t.equalsIgnoreCase("Ajuda do Professor") ||
-                            t.equalsIgnoreCase("Ajuda Do Professor")
-            );
-        }
-
         return false;
     }
 
 
+    private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
+        int id = abyss.getId();
 
+        if (id == 0) {
+            return hasToolNamed(p, "IDE");
+        }
+
+        if (id == 1) {
+            return hasToolNamed(p, "Testes Unitários", "Testes Unitarios");
+        }
+
+        if (id == 2 || id == 3) {
+            return hasToolNamed(p, "Tratamento de Excepções", "Tratamento de Excecoes");
+        }
+
+        if (id == 5 || id == 6) {
+            return hasToolNamed(p,
+                    "Programação Funcional", "Programacao Funcional",
+                    "Functional", "Funcional");
+        }
+
+        if (id == 8) {
+            return hasToolNamed(p, "Herança", "Heranca", "Inheritance");
+        }
+
+        return false;
+    }
 
 
     private void consumeToolForAbyss(Player p, Abyss abyss) {
@@ -962,25 +962,24 @@ public class GameManager {
             p.tools.removeIf(t ->
                     t.equalsIgnoreCase("Testes Unitários") ||
                             t.equalsIgnoreCase("Testes Unitarios"));
-        } else if (id == 5 || id == 6) {
-            p.tools.removeIf(t ->
-                    t.equalsIgnoreCase("Programação Funcional") ||
-                            t.equalsIgnoreCase("Programacao Funcional") ||
-                            t.equalsIgnoreCase("Funcional") ||
-                            t.equalsIgnoreCase("Functional"));
         } else if (id == 2 || id == 3) {
             p.tools.removeIf(t ->
                     t.equalsIgnoreCase("Tratamento de Excepções") ||
                             t.equalsIgnoreCase("Tratamento de Excecoes"));
-        }
-
-        else if (id == 8) {
+        } else if (id == 5 || id == 6) {
             p.tools.removeIf(t ->
-                    t.equalsIgnoreCase("Ajuda do Professor") ||
-                            t.equalsIgnoreCase("Ajuda Do Professor")
-            );
+                    t.equalsIgnoreCase("Programação Funcional") ||
+                            t.equalsIgnoreCase("Programacao Funcional") ||
+                            t.equalsIgnoreCase("Functional") ||
+                            t.equalsIgnoreCase("Funcional"));
+        } else if (id == 8) {
+            p.tools.removeIf(t ->
+                    t.equalsIgnoreCase("Herança") ||
+                            t.equalsIgnoreCase("Heranca") ||
+                            t.equalsIgnoreCase("Inheritance"));
         }
     }
+
 
 
 }
