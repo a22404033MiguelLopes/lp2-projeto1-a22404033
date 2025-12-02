@@ -379,8 +379,14 @@ public class GameManager {
         if (playerOrder.isEmpty()) {
             return -1;
         }
+
+        if (gameIsOver() && winnerId != null) {
+            return winnerId;
+        }
+
         return playerOrder.get(currentIdx);
     }
+
 
     public boolean moveCurrentPlayer(int nrSpaces) {
         if (nrSpaces < 1 || nrSpaces > 6) {
