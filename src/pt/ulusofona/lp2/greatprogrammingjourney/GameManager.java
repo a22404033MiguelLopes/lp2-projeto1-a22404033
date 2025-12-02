@@ -943,10 +943,6 @@ public class GameManager {
                     "Functional", "Funcional");
         }
 
-        if (id == 8) {
-            return !p.tools.isEmpty();
-        }
-
         return false;
     }
 
