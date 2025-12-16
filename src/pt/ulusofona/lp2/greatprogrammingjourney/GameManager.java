@@ -147,11 +147,15 @@ public class GameManager {
 
             if (type == 0) {
                 Abyss a = createAbyss(subtype, position);
-                if (a == null) return false;
+                if (a == null) {
+                    return false;
+                }
                 abysses.put(position, a);
             } else {
                 Tool t = createTool(subtype, position);
-                if (t == null) return false;
+                if (t == null) {
+                    return false;
+                }
                 tools.put(position, t);
             }
         }
@@ -583,40 +587,24 @@ public class GameManager {
     }
 
     public void loadGame(File file) throws FileNotFoundException, InvalidFileException {
-        if (file == null || !file.exists() || !file.isFile()) {
+        if (file == null || !file.isFile()) {
             throw new FileNotFoundException("Ficheiro não encontrado");
         }
 
-        Scanner sc;
-        try {
-            sc = new Scanner(file);
-        } catch (Exception e) {
-            throw new InvalidFileException("Não foi possível ler o ficheiro", e);
-        }
-
-        try {
-
-            if (!sc.hasNextLine()) {
-                throw new InvalidFileException("Ficheiro vazio");
+        try (Scanner sc = new Scanner(file)) {
+            String header = sc.hasNextLine() ? sc.nextLine().trim() : "";
+            String[] hp = header.split(";");
+            if (hp.length != 3) {
+                throw new InvalidFileException("Formato inválido");
             }
 
-            String header = sc.nextLine().trim();
-            String[] headerParts = header.split(";");
-            if (headerParts.length != 3) {
-                throw new InvalidFileException("Cabeçalho inválido");
-            }
-
-            int wSize = Integer.parseInt(headerParts[0]);
-            int tCount = Integer.parseInt(headerParts[1]);
-            int currentPlayerId = Integer.parseInt(headerParts[2]);
-
-            if (!sc.hasNextLine()) {
-                throw new InvalidFileException("Dados de jogadores em falta");
-            }
+            int wSize = Integer.parseInt(hp[0]);
+            int tCount = Integer.parseInt(hp[1]);
+            int currentPlayerId = Integer.parseInt(hp[2]);
 
             int numPlayers = Integer.parseInt(sc.nextLine().trim());
             if (numPlayers < 2 || numPlayers > 4) {
-                throw new InvalidFileException("Número de jogadores inválido");
+                throw new InvalidFileException("Formato inválido");
             }
 
             playerOrder.clear();
@@ -630,15 +618,9 @@ public class GameManager {
             this.initialized = false;
 
             for (int i = 0; i < numPlayers; i++) {
-                if (!sc.hasNextLine()) {
-                    throw new InvalidFileException("Linha de jogador em falta");
-                }
-
-                String pl = sc.nextLine().trim();
-                String[] parts = pl.split(";");
-
+                String[] parts = sc.nextLine().trim().split(";");
                 if (parts.length != 6 && parts.length != 7) {
-                    throw new InvalidFileException("Formato de jogador inválido");
+                    throw new InvalidFileException("Formato inválido");
                 }
 
                 int id = Integer.parseInt(parts[0]);
@@ -647,20 +629,15 @@ public class GameManager {
                 int pos = Integer.parseInt(parts[3]);
                 String state = parts[4];
 
-                String langsRaw = parts[5];
-                String toolsRaw = (parts.length == 7) ? parts[6] : "";
-
-                if (id <= 0) {
-                    throw new InvalidFileException("ID de jogador inválido");
+                if (id <= 0 || pos < 1 || pos > wSize) {
+                    throw new InvalidFileException("Formato inválido");
                 }
                 if (!state.equals("Em Jogo") && !state.equals("Preso") && !state.equals("Derrotado")) {
-                    throw new InvalidFileException("Estado de jogador inválido");
-                }
-                if (pos < 1 || pos > wSize) {
-                    throw new InvalidFileException("Posição de jogador inválida");
+                    throw new InvalidFileException("Formato inválido");
                 }
 
                 ArrayList<String> langs = new ArrayList<>();
+                String langsRaw = parts[5].trim();
                 if (!langsRaw.isEmpty()) {
                     for (String l : langsRaw.split(",")) {
                         l = l.trim();
@@ -673,6 +650,7 @@ public class GameManager {
                 p.state = state;
 
                 ArrayList<String> toolsList = new ArrayList<>();
+                String toolsRaw = (parts.length == 7) ? parts[6].trim() : "";
                 if (!toolsRaw.isEmpty()) {
                     for (String t : toolsRaw.split(",")) {
                         t = t.trim();
@@ -685,68 +663,31 @@ public class GameManager {
                 playerOrder.add(id);
             }
 
-
-            if (!sc.hasNextLine()) {
-                throw new InvalidFileException("Número de abismos em falta");
-            }
-
             int numAbysses = Integer.parseInt(sc.nextLine().trim());
             for (int i = 0; i < numAbysses; i++) {
-                if (!sc.hasNextLine()) {
-                    throw new InvalidFileException("Linha de abismo em falta");
-                }
-
-                String line = sc.nextLine().trim();
-                String[] parts = line.split(";");
-
-                if (parts.length != 2) {
-                    throw new InvalidFileException("Formato de abismo inválido");
-                }
+                String[] parts = sc.nextLine().trim().split(";");
+                if (parts.length != 2) throw new InvalidFileException("Formato inválido");
 
                 int subtype = Integer.parseInt(parts[0]);
                 int pos = Integer.parseInt(parts[1]);
-
-                if (pos < 1 || pos > wSize) {
-                    throw new InvalidFileException("Posição de abismo inválida");
-                }
+                if (pos < 1 || pos > wSize) throw new InvalidFileException("Formato inválido");
 
                 Abyss a = createAbyss(subtype, pos);
-                if (a == null) {
-                    throw new InvalidFileException("Tipo de abismo inválido");
-                }
-
+                if (a == null) throw new InvalidFileException("Formato inválido");
                 abysses.put(pos, a);
-            }
-
-            if (!sc.hasNextLine()) {
-                throw new InvalidFileException("Número de ferramentas em falta");
             }
 
             int numTools = Integer.parseInt(sc.nextLine().trim());
             for (int i = 0; i < numTools; i++) {
-                if (!sc.hasNextLine()) {
-                    throw new InvalidFileException("Linha de ferramenta em falta");
-                }
-
-                String line = sc.nextLine().trim();
-                String[] parts = line.split(";");
-
-                if (parts.length != 2) {
-                    throw new InvalidFileException("Formato de ferramenta inválido");
-                }
+                String[] parts = sc.nextLine().trim().split(";");
+                if (parts.length != 2) throw new InvalidFileException("Formato inválido");
 
                 int subtype = Integer.parseInt(parts[0]);
                 int pos = Integer.parseInt(parts[1]);
-
-                if (pos < 1 || pos > wSize) {
-                    throw new InvalidFileException("Posição de ferramenta inválida");
-                }
+                if (pos < 1 || pos > wSize) throw new InvalidFileException("Formato inválido");
 
                 Tool t = createTool(subtype, pos);
-                if (t == null) {
-                    throw new InvalidFileException("Tipo de ferramenta inválido");
-                }
-
+                if (t == null) throw new InvalidFileException("Formato inválido");
                 tools.put(pos, t);
             }
 
@@ -769,20 +710,14 @@ public class GameManager {
 
             this.initialized = true;
 
-        } catch (NumberFormatException e) {
-            throw new InvalidFileException("Valor numérico inválido", e);
-
+        } catch (FileNotFoundException e) {
+            throw e;
         } catch (InvalidFileException e) {
             throw e;
-
         } catch (Exception e) {
-            throw new InvalidFileException("Erro ao carregar ficheiro", e);
-
-        } finally {
-            sc.close();
+            throw new InvalidFileException("Formato inválido", e);
         }
     }
-
 
     public boolean saveGame(File file) {
         if (file == null) {
@@ -953,7 +888,6 @@ public class GameManager {
         return false;
     }
 
-
     private boolean playerHasToolForAbyss(Player p, Abyss abyss) {
         int id = abyss.getId();
 
@@ -962,7 +896,7 @@ public class GameManager {
         }
 
         if (id == 1) {
-            return hasToolNamed(p, "Testes Unitários", "Testes Unitarios");
+            return hasToolNamed(p, "Testes Unitários");
         }
 
         if (id == 2 || id == 3) {
@@ -970,11 +904,8 @@ public class GameManager {
         }
 
         if (id == 5 || id == 6 || id == 8) {
-            return hasToolNamed(p,
-                    "Programação Funcional", "Programacao Funcional",
-                    "Functional", "Funcional");
+            return hasToolNamed(p, "Programação Funcional");
         }
-
         return false;
     }
 
@@ -985,19 +916,11 @@ public class GameManager {
         if (id == 0) {
             p.tools.removeIf(t -> t.equalsIgnoreCase("IDE"));
         } else if (id == 1) {
-            p.tools.removeIf(t ->
-                    t.equalsIgnoreCase("Testes Unitários") ||
-                            t.equalsIgnoreCase("Testes Unitarios"));
+            p.tools.removeIf(t -> t.equalsIgnoreCase("Testes Unitários"));
         } else if (id == 2 || id == 3) {
-            p.tools.removeIf(t ->
-                    t.equalsIgnoreCase("Tratamento de Excepções") ||
-                            t.equalsIgnoreCase("Tratamento de Excecoes"));
+            p.tools.removeIf(t -> t.equalsIgnoreCase("Tratamento de Excepções"));
         } else if (id == 5 || id == 6 || id == 8) {
-            p.tools.removeIf(t ->
-                    t.equalsIgnoreCase("Programação Funcional") ||
-                            t.equalsIgnoreCase("Programacao Funcional") ||
-                            t.equalsIgnoreCase("Functional") ||
-                            t.equalsIgnoreCase("Funcional"));
+            p.tools.removeIf(t -> t.equalsIgnoreCase("Programação Funcional"));
         }
     }
 }
